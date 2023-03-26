@@ -89,6 +89,6 @@ function renderCoutryCard(country) {
     } else {
         refs.cardContainer.innerHTML = country.map(countryCard);
     }
-}
-}
+    }
 
+}
