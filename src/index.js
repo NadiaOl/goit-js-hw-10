@@ -1,26 +1,28 @@
 import './css/styles.css';
 
 // импортируем fetch, debounce, Notify
-
-import API from './fetchCountries';
+import { fetchCountries } from './fetchCountries';
 import debounce from 'lodash.debounce';
 import { Notify } from 'notiflix/build/notiflix-notify-aio';
 
 const DEBOUNCE_DELAY = 300;
+
 // получаем доступ к полю ввода и div, в который будем помещать разметку
 const refs = {
     cardContainer: document.querySelector('.country-info'),
     searchField: document.querySelector('#search-box'),
 }
+
 // вешаем слушателя на поле ввода
 refs.searchField.addEventListener('input', debounce((onSearch), DEBOUNCE_DELAY));
+
 
 // создаем функцию, которая 
 // 1) получает данные из поля ввода, проверяет, чтоб поле ввода не было пустым
 // 2) запускает запрос на бэк-энд
 // 3) осуществляет поиск, по результату производит разметку либо обрабатывает ошибку
 
-let seekedCountry = "";
+let seekedCountry = "country name";
 
 function onSearch(event) {
     seekedCountry = event.target.value.trim();
@@ -29,12 +31,18 @@ function onSearch(event) {
         return
     };
 
-    API.fetchCountries(seekedCountry)
+    fetchCountries(seekedCountry)
         .then(renderCoutryCard)
-        .catch(onError)
-    
+        .catch(({ message }) => {
+    event.target.value = "";
+    if (message === "404") {
+        Notify.failure('Oops, there is no country with that name');
+    } else {
+        Notify.failure('Something went wrong :( Please, try again later')
+    }
+})
 }
-    
+
 // функция подготовки полной разметки
 function countryCard({ capital, name, population, languages, flags }) {
     return `
@@ -72,7 +80,6 @@ function countryPreview({ name, flags }) {
 // если от 2 до 10 выводим короткую разметку
 // если 1 - полную 
 function renderCoutryCard(country) {
-    console.log(country.length);
     if (country.length >= 10) {
         Notify.info('Too many matches found. Please enter a more specific name.');
         refs.cardContainer.innerHTML = ""
@@ -83,10 +90,5 @@ function renderCoutryCard(country) {
         refs.cardContainer.innerHTML = country.map(countryCard);
     }
 }
-}
-
-// функция для обработки ошибки
-function onError(error) {
-Notify.failure('Oops, there is no country with that name')
 }
 

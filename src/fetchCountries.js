@@ -8,9 +8,5 @@ function fetchCountries(seekedCountry) {
             }
             return response.json()
         });
-
-    // .catch(error => {
-    //     console.log(error)   
-    // })     
 }
-export default { fetchCountries };
+export { fetchCountries };
